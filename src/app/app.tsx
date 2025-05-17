@@ -1,11 +1,11 @@
-import { BoardPage } from "@/features/board";
-import { BoardCard } from "@/features/board-list";
+import { AppHeader } from "@/features/header";
+import { Outlet } from "react-router-dom";
 
 export function App() {
   return (
     <div>
-      <BoardPage />
-      <BoardCard />
+      <AppHeader />
+      <Outlet />
     </div>
   );
 }
