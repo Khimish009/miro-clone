@@ -14,7 +14,7 @@ export function createRefreshTokenCookie(refreshToken: string) {
   return `refreshToken=${refreshToken}; Max-Age=604800`;
 }
 
-async function generateTokens(session: Session) {
+export async function generateTokens(session: Session) {
   const accessToken = await new SignJWT(session)
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
@@ -30,7 +30,7 @@ async function generateTokens(session: Session) {
   return { accessToken, refreshToken };
 }
 
-async function verifyToken(token: string): Promise<Session> {
+export async function verifyToken(token: string): Promise<Session> {
   const { payload } = await jwtVerify(token, JWT_SECRET);
   return payload as Session;
 }
