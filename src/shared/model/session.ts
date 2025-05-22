@@ -26,5 +26,5 @@ export const useSession = createGStore(() => {
 
   const session = token ? decodeJwt<Session>(token) : null;
 
-  return { login, logout, session };
+  return { login, logout, session, token };
 });
