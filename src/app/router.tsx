@@ -3,6 +3,7 @@ import { createBrowserRouter, redirect } from "react-router-dom";
 import { App } from "./app";
 import { Providers } from "./providers";
 import { ProtectedRoute } from "./protected-route";
+import { AppHeader } from "@/features/header";
 
 export const router = createBrowserRouter([
   {
@@ -13,7 +14,12 @@ export const router = createBrowserRouter([
     ),
     children: [
       {
-        Component: ProtectedRoute,
+        element: (
+          <>
+            <AppHeader />
+            <ProtectedRoute />
+          </>
+        ),
         children: [
           {
             path: ROUTES.BOARDS,
