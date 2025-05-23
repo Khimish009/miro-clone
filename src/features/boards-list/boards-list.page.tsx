@@ -6,6 +6,7 @@ import { href, Link } from "react-router-dom";
 
 function BoardsListPage() {
   const boardsQuery = rqClient.useQuery("get", "/boards");
+
   return (
     <div>
       {boardsQuery.data?.map((board) => (
