@@ -1,6 +1,8 @@
 import { decodeJwt } from "jose";
 import { useState } from "react";
 import { createGStore } from "create-gstore";
+import { publicFetchClient, publicRqClient } from "../api/instance";
+import { data } from "react-router-dom";
 
 type Session = {
   userId: string;
@@ -26,5 +28,27 @@ export const useSession = createGStore(() => {
 
   const session = token ? decodeJwt<Session>(token) : null;
 
-  return { login, logout, session, token };
+  const refreshToken = async () => {
+    if (!token) return;
+
+    const session = decodeJwt<Session>(token);
+
+    if (session.exp < Date.now() / 1000 + 1) {
+      const newToken = await publicFetchClient
+        .POST("/auth/refresh")
+        .then((res) => res.data?.accessToken ?? null);
+
+      if (newToken) {
+        login(newToken);
+        return newToken;
+      } else {
+        logout();
+        return null;
+      }
+    }
+
+    return token;
+  };
+
+  return { login, logout, refreshToken, session };
 });

@@ -18,7 +18,7 @@ export const publicRqClient = createClient(publicFetchClient);
 
 fetchClient.use({
   async onRequest({ request }) {
-    const token = await useSession.getState().token;
+    const token = await useSession.getState().refreshToken();
 
     if (token) {
       request.headers.set("Authorization", `Bearer ${token}`);
