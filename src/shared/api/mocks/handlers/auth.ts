@@ -54,7 +54,6 @@ export const authHandlers = [
       },
     );
   }),
-
   http.post("/auth/register", async ({ request }) => {
     const body = await request.json();
 
