@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { rqClient } from "@/shared/api/instance";
 import { CONFIG } from "@/shared/model/config";
 import { ROUTES } from "@/shared/model/routes";
@@ -18,24 +17,23 @@ import {
 import { Switch } from "@/shared/ui/kit/switch";
 import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/kit/tabs";
 import type { ApiSchemas } from "@/shared/api/schema";
-import { useBoardList } from "./use-board-list";
-
-type BoardsSortOption = "createdAt" | "updatedAt" | "lastOpenedAt" | "name";
+import { useBoardsList } from "./use-boards-list";
+import { useBoardsFilters, type BoardsSortOption } from "./use-boards-filters";
 
 function BoardsListPage() {
   const queryClient = useQueryClient();
-  const [page, setPage] = useState(1);
-  const [search, setSearch] = useState("");
-  const [sort, setSort] = useState<BoardsSortOption>("lastOpenedAt");
 
-  const boardsQuery = useBoardList({});
+  const boardsFilters = useBoardsFilters();
+  const boardsQuery = useBoardsList({
+    search: boardsFilters.search,
+    sort: boardsFilters.sort,
+  });
 
   const createBoardMutation = rqClient.useMutation("post", "/boards", {
     onSettled: async () => {
       await queryClient.invalidateQueries(
         rqClient.queryOptions("get", "/boards"),
       );
-      setPage(1);
     },
   });
 
@@ -80,8 +78,8 @@ function BoardsListPage() {
           <Input
             id="search"
             placeholder="Введите название доски..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            value={boardsFilters.search}
+            onChange={(e) => boardsFilters.setSearch(e.target.value)}
             className="w-full"
           />
         </div>
@@ -89,8 +87,10 @@ function BoardsListPage() {
         <div className="flex flex-col">
           <Label htmlFor="sort">Сортировка</Label>
           <Select
-            value={sort}
-            onValueChange={(value) => setSort(value as BoardsSortOption)}
+            value={boardsFilters.sort}
+            onValueChange={(value) =>
+              boardsFilters.setSort(value as BoardsSortOption)
+            }
           >
             <SelectTrigger id="sort" className="w-full">
               <SelectValue placeholder="Сортировка" />
@@ -135,7 +135,7 @@ function BoardsListPage() {
         </form>
       </div>
 
-      {boardsQuery.isPending && page === 1 ? (
+      {boardsQuery.isPending ? (
         <div className="text-center py-10">Загрузка...</div>
       ) : (
         <>

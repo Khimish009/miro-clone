@@ -8,7 +8,7 @@ type UserBoardListParams = {
   sort?: "createdAt" | "updatedAt" | "lastOpenedAt" | "name";
 };
 
-export function useBoardList({
+export function useBoardsList({
   limit = 20,
   isFavorite,
   search,
