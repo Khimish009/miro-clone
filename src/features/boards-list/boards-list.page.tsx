@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState } from "react";
 import { rqClient } from "@/shared/api/instance";
 import { CONFIG } from "@/shared/model/config";
 import { ROUTES } from "@/shared/model/routes";
@@ -16,8 +16,9 @@ import {
   SelectValue,
 } from "@/shared/ui/kit/select";
 import { Switch } from "@/shared/ui/kit/switch";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/kit/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/kit/tabs";
 import type { ApiSchemas } from "@/shared/api/schema";
+import { useBoardList } from "./use-board-list";
 
 type BoardsSortOption = "createdAt" | "updatedAt" | "lastOpenedAt" | "name";
 
@@ -25,91 +26,9 @@ function BoardsListPage() {
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [sort, setSort] = useState<BoardsSortOption>("lastOpenedAt");
-  const [showFavorites, setShowFavorites] = useState<boolean | null>(null);
-  const [boards, setBoards] = useState<ApiSchemas["Board"][]>([]);
-  const [hasMore, setHasMore] = useState(true);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const observer = useRef<IntersectionObserver | null>(null);
-  const loadMoreRef = useRef<HTMLDivElement>(null);
 
-  // Дебаунс для поиска
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearch(search);
-      setPage(1); // Сбрасываем страницу при изменении поиска
-      setBoards([]); // Очищаем список досок при новом поиске
-    }, 300);
-
-    return () => clearTimeout(timer);
-  }, [search]);
-
-  // Сброс страницы и списка досок при изменении фильтров или сортировки
-  useEffect(() => {
-    setPage(1);
-    setBoards([]);
-  }, [sort, showFavorites]);
-
-  const boardsQuery = rqClient.useQuery("get", "/boards", {
-    params: {
-      query: {
-        page,
-        limit: 20,
-        sort,
-        search: debouncedSearch || undefined,
-        isFavorite: showFavorites,
-      },
-    },
-    enabled: true,
-  });
-
-  // Обновляем список досок при получении новых данных
-  useEffect(() => {
-    if (boardsQuery.data?.list) {
-      if (page === 1) {
-        setBoards(boardsQuery.data.list);
-      } else {
-        setBoards((prev) => [...prev, ...boardsQuery.data.list]);
-      }
-      setHasMore(page < (boardsQuery.data.totalPages || 1));
-      setIsLoadingMore(false);
-    }
-  }, [boardsQuery.data, page]);
-
-  // Функция для загрузки следующей страницы
-  const loadMore = useCallback(() => {
-    if (!isLoadingMore && hasMore && !boardsQuery.isPending) {
-      setIsLoadingMore(true);
-      setPage((prevPage) => prevPage + 1);
-    }
-  }, [isLoadingMore, hasMore, boardsQuery.isPending]);
-
-  // Настройка IntersectionObserver для бесконечной прокрутки
-  useEffect(() => {
-    if (observer.current) {
-      observer.current.disconnect();
-    }
-
-    observer.current = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && hasMore) {
-          loadMore();
-        }
-      },
-      { threshold: 0.5 },
-    );
-
-    if (loadMoreRef.current) {
-      observer.current.observe(loadMoreRef.current);
-    }
-
-    return () => {
-      if (observer.current) {
-        observer.current.disconnect();
-      }
-    };
-  }, [loadMore, hasMore]);
+  const boardsQuery = useBoardList({});
 
   const createBoardMutation = rqClient.useMutation("post", "/boards", {
     onSettled: async () => {
@@ -188,12 +107,8 @@ function BoardsListPage() {
 
       <Tabs defaultValue="all" className="mb-6">
         <TabsList>
-          <TabsTrigger value="all" onClick={() => setShowFavorites(null)}>
-            Все доски
-          </TabsTrigger>
-          <TabsTrigger value="favorites" onClick={() => setShowFavorites(true)}>
-            Избранные
-          </TabsTrigger>
+          <TabsTrigger value="all">Все доски</TabsTrigger>
+          <TabsTrigger value="favorites">Избранные</TabsTrigger>
         </TabsList>
       </Tabs>
 
@@ -225,7 +140,7 @@ function BoardsListPage() {
       ) : (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {boards.map((board) => (
+            {boardsQuery.boards.map((board) => (
               <Card key={board.id} className="relative">
                 <div className="absolute top-2 right-2 flex items-center gap-2">
                   <Switch
@@ -275,13 +190,14 @@ function BoardsListPage() {
             ))}
           </div>
 
-          {boards.length === 0 && !boardsQuery.isPending && (
+          {boardsQuery.boards.length === 0 && !boardsQuery.isPending && (
             <div className="text-center py-10">Доски не найдены</div>
           )}
 
-          {hasMore && (
-            <div ref={loadMoreRef} className="text-center py-8">
-              {isLoadingMore && "Загрузка дополнительных досок..."}
+          {boardsQuery.hasNextPage && (
+            <div ref={boardsQuery.cursorRef} className="text-center py-8">
+              {boardsQuery.isFetchingNextPage &&
+                "Загрузка дополнительных досок..."}
             </div>
           )}
         </>
