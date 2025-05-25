@@ -19,13 +19,14 @@ import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/kit/tabs";
 import type { ApiSchemas } from "@/shared/api/schema";
 import { useBoardsList } from "./use-boards-list";
 import { useBoardsFilters, type BoardsSortOption } from "./use-boards-filters";
+import { useDebauncedValue } from "@/shared/lib/react";
 
 function BoardsListPage() {
   const queryClient = useQueryClient();
 
   const boardsFilters = useBoardsFilters();
   const boardsQuery = useBoardsList({
-    search: boardsFilters.search,
+    search: useDebauncedValue(boardsFilters.search, 300),
     sort: boardsFilters.sort,
   });
 
