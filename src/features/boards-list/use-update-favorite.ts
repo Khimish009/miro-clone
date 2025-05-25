@@ -1,33 +1,15 @@
 import { rqClient } from "@/shared/api/instance";
-import type { ApiSchemas } from "@/shared/api/schema";
-import { useQueryClient, type InfiniteData } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
+import { startTransition, useOptimistic } from "react";
 
 export function useUpdateFavorite() {
   const queryClient = useQueryClient();
+  const [favorite, setFavorite] = useOptimistic<Record<string, boolean>>({});
 
-  const toggleFavoriteMutation = rqClient.useMutation(
+  const updateFavoriteMutation = rqClient.useMutation(
     "put",
     "/boards/{boardId}/favorite",
     {
-      onMutate: async ({ params, body }) => {
-        await queryClient.cancelQueries(
-          rqClient.queryOptions("get", "/boards"),
-        );
-
-        queryClient.setQueriesData(
-          rqClient.queryOptions("get", "/boards"),
-          (data: InfiniteData<ApiSchemas["BoardsList"]>) => ({
-            ...data,
-            pages: data.pages.map((page) => ({
-              list: page.list.map((board) =>
-                board.id === params.path.boardId
-                  ? { ...board, isFavorite: body.isFavorite }
-                  : board,
-              ),
-            })),
-          }),
-        );
-      },
       onSettled: async () => {
         await queryClient.invalidateQueries(
           rqClient.queryOptions("get", "/boards"),
@@ -37,13 +19,26 @@ export function useUpdateFavorite() {
   );
 
   const toggle = (board: { id: string; isFavorite: boolean }) => {
-    toggleFavoriteMutation.mutate({
-      params: { path: { boardId: board.id } },
-      body: { isFavorite: !board.isFavorite },
+    startTransition(async () => {
+      setFavorite((prev) => ({ ...prev, [board.id]: !board.isFavorite }));
+
+      await updateFavoriteMutation.mutateAsync({
+        params: { path: { boardId: board.id } },
+        body: { isFavorite: !board.isFavorite },
+      });
     });
   };
 
+  const isOptimisticFavorite = ({
+    id,
+    isFavorite,
+  }: {
+    id: string;
+    isFavorite: boolean;
+  }) => favorite[id] ?? isFavorite;
+
   return {
     toggle,
+    isOptimisticFavorite,
   };
 }
