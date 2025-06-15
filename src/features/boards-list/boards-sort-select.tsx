@@ -4,7 +4,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@radix-ui/react-select";
+} from "@/shared/ui/kit/select";
 import type { BoardsSortOption } from "./use-boards-filters";
 
 export function BoardsSortSelect({
