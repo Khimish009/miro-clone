@@ -21,7 +21,12 @@ import { useCreateBoard } from "./use-create-board";
 import { useDeleteBoard } from "./use-delete-board";
 import { useUpdateFavorite } from "./use-update-favorite";
 import { PlusIcon, StarIcon } from "lucide-react";
-import { BoardListLayout, BoardListLayoutHeader } from "./board-list-layout";
+import {
+  BoardListLayout,
+  BoardListLayoutHeader,
+  BoardsListLayout,
+  BoardsListLayoutHeader,
+} from "./board-list-layout";
 import { ViewModeToggle, type ViewMode } from "./view-mode-toggle";
 import { useState } from "react";
 
@@ -38,14 +43,15 @@ function BoardsListPage() {
   const [viewMode, setViewMode] = useState<ViewMode>("list");
 
   return (
-    <BoardListLayout
+    <BoardsListLayout
       header={
-        <BoardListLayoutHeader
+        <BoardsListLayoutHeader
           title="Доски"
           description="Здесь вы можете просматривать и управлять своими досками"
           actions={<ViewModeToggle value={viewMode} onChange={setViewMode} />}
         />
       }
+      filters={<BoardsListLayout />}
     />
   );
 
