@@ -3,17 +3,17 @@ import type { ReactNode } from "react";
 export function BoardsListLayout({
   header,
   filters,
-  children,
+  list,
 }: {
   header: ReactNode;
   filters: ReactNode;
-  children: ReactNode;
+  list: ReactNode;
 }) {
   return (
     <div className="container mx-auto p-4 flex flex-col gap-6">
       {header}
       {filters}
-      {children}
+      {list}
     </div>
   );
 }

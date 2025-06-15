@@ -1,9 +1,8 @@
+import { useDebauncedValue } from "@/shared/lib/react";
 import { CONFIG } from "@/shared/model/config";
 import { ROUTES } from "@/shared/model/routes";
 import { Button } from "@/shared/ui/kit/button";
 import { Card, CardFooter, CardHeader } from "@/shared/ui/kit/card";
-import { Link, href } from "react-router-dom";
-import { Input } from "@/shared/ui/kit/input";
 import { Label } from "@/shared/ui/kit/label";
 import {
   Select,
@@ -14,21 +13,22 @@ import {
 } from "@/shared/ui/kit/select";
 import { Switch } from "@/shared/ui/kit/switch";
 import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/kit/tabs";
-import { useBoardsList } from "./use-boards-list";
-import { useBoardsFilters, type BoardsSortOption } from "./use-boards-filters";
-import { useDebauncedValue } from "@/shared/lib/react";
-import { useCreateBoard } from "./use-create-board";
-import { useDeleteBoard } from "./use-delete-board";
-import { useUpdateFavorite } from "./use-update-favorite";
 import { PlusIcon, StarIcon } from "lucide-react";
+import { useState } from "react";
+import { Link, href } from "react-router-dom";
 import {
-  BoardListLayout,
-  BoardListLayoutHeader,
+  BoardsListFilters,
   BoardsListLayout,
   BoardsListLayoutHeader,
 } from "./board-list-layout";
+import { BoardsSearchInput } from "./boards-search-input";
+import { BoardsSortSelect } from "./boards-sort-select";
+import { useBoardsFilters, type BoardsSortOption } from "./use-boards-filters";
+import { useBoardsList } from "./use-boards-list";
+import { useCreateBoard } from "./use-create-board";
+import { useDeleteBoard } from "./use-delete-board";
+import { useUpdateFavorite } from "./use-update-favorite";
 import { ViewModeToggle, type ViewMode } from "./view-mode-toggle";
-import { useState } from "react";
 
 function BoardsListPage() {
   const boardsFilters = useBoardsFilters();
@@ -48,10 +48,35 @@ function BoardsListPage() {
         <BoardsListLayoutHeader
           title="Доски"
           description="Здесь вы можете просматривать и управлять своими досками"
+          actions={
+            <Button
+              disabled={createBoard.isPending}
+              onClick={createBoard.createBoard}
+            >
+              <PlusIcon />
+              Создать доску
+            </Button>
+          }
+        />
+      }
+      filters={
+        <BoardsListFilters
+          sort={
+            <BoardsSortSelect
+              value={boardsFilters.sort}
+              onChange={boardsFilters.setSort}
+            />
+          }
+          filters={
+            <BoardsSearchInput
+              value={boardsFilters.search}
+              onChange={boardsFilters.setSearch}
+            />
+          }
           actions={<ViewModeToggle value={viewMode} onChange={setViewMode} />}
         />
       }
-      filters={<BoardsListLayout />}
+      list={<></>}
     />
   );
 
@@ -62,13 +87,6 @@ function BoardsListPage() {
       <div className="mb-8 grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="md:col-span-3">
           <Label htmlFor="search">Поиск</Label>
-          <Input
-            id="search"
-            placeholder="Введите название доски..."
-            value={boardsFilters.search}
-            onChange={(e) => boardsFilters.setSearch(e.target.value)}
-            className="w-full"
-          />
         </div>
 
         <div className="flex flex-col">
