@@ -20,15 +20,15 @@ import {
   BoardsListFilters,
   BoardsListLayout,
   BoardsListLayoutHeader,
-} from "./board-list-layout";
-import { BoardsSearchInput } from "./boards-search-input";
-import { BoardsSortSelect } from "./boards-sort-select";
-import { useBoardsFilters, type BoardsSortOption } from "./use-boards-filters";
-import { useBoardsList } from "./use-boards-list";
-import { useCreateBoard } from "./use-create-board";
-import { useDeleteBoard } from "./use-delete-board";
-import { useUpdateFavorite } from "./use-update-favorite";
-import { ViewModeToggle, type ViewMode } from "./view-mode-toggle";
+} from "./ui/board-list-layout";
+import { BoardsSearchInput } from "./ui/boards-search-input";
+import { BoardsSortSelect } from "./ui/boards-sort-select";
+import { useBoardsFilters } from "./model/use-boards-filters";
+import { useBoardsList } from "./model/use-boards-list";
+import { useCreateBoard } from "./model/use-create-board";
+import { useDeleteBoard } from "./model/use-delete-board";
+import { useUpdateFavorite } from "./model/use-update-favorite";
+import { ViewModeToggle, type ViewMode } from "./ui/view-mode-toggle";
 
 function BoardsListPage() {
   const boardsFilters = useBoardsFilters();
@@ -91,22 +91,6 @@ function BoardsListPage() {
 
         <div className="flex flex-col">
           <Label htmlFor="sort">Сортировка</Label>
-          <Select
-            value={boardsFilters.sort}
-            onValueChange={(value) =>
-              boardsFilters.setSort(value as BoardsSortOption)
-            }
-          >
-            <SelectTrigger id="sort" className="w-full">
-              <SelectValue placeholder="Сортировка" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="lastOpenedAt">По дате открытия</SelectItem>
-              <SelectItem value="createdAt">По дате создания</SelectItem>
-              <SelectItem value="updatedAt">По дате обновления</SelectItem>
-              <SelectItem value="name">По имени</SelectItem>
-            </SelectContent>
-          </Select>
         </div>
       </div>
 
