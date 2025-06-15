@@ -22,6 +22,8 @@ import { useDeleteBoard } from "./use-delete-board";
 import { useUpdateFavorite } from "./use-update-favorite";
 import { PlusIcon, StarIcon } from "lucide-react";
 import { BoardListLayout, BoardListLayoutHeader } from "./board-list-layout";
+import { ViewModeToggle, type ViewMode } from "./view-mode-toggle";
+import { useState } from "react";
 
 function BoardsListPage() {
   const boardsFilters = useBoardsFilters();
@@ -33,21 +35,15 @@ function BoardsListPage() {
   const deleteBoard = useDeleteBoard();
   const updateFavorite = useUpdateFavorite();
 
+  const [viewMode, setViewMode] = useState<ViewMode>("list");
+
   return (
     <BoardListLayout
       header={
         <BoardListLayoutHeader
           title="Доски"
           description="Здесь вы можете просматривать и управлять своими досками"
-          actions={
-            <Button
-              disabled={createBoard.isPending}
-              onClick={createBoard.createBoard}
-            >
-              <PlusIcon />
-              Создать доску
-            </Button>
-          }
+          actions={<ViewModeToggle value={viewMode} onChange={setViewMode} />}
         />
       }
     />
