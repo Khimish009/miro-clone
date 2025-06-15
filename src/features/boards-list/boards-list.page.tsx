@@ -20,7 +20,8 @@ import { useDebauncedValue } from "@/shared/lib/react";
 import { useCreateBoard } from "./use-create-board";
 import { useDeleteBoard } from "./use-delete-board";
 import { useUpdateFavorite } from "./use-update-favorite";
-import { StarIcon } from "lucide-react";
+import { PlusIcon, StarIcon } from "lucide-react";
+import { BoardListLayout, BoardListLayoutHeader } from "./board-list-layout";
 
 function BoardsListPage() {
   const boardsFilters = useBoardsFilters();
@@ -31,6 +32,26 @@ function BoardsListPage() {
   const createBoard = useCreateBoard();
   const deleteBoard = useDeleteBoard();
   const updateFavorite = useUpdateFavorite();
+
+  return (
+    <BoardListLayout
+      header={
+        <BoardListLayoutHeader
+          title="Доски"
+          description="Здесь вы можете просматривать и управлять своими досками"
+          actions={
+            <Button
+              disabled={createBoard.isPending}
+              onClick={createBoard.createBoard}
+            >
+              <PlusIcon />
+              Создать доску
+            </Button>
+          }
+        />
+      }
+    />
+  );
 
   return (
     <div className="container mx-auto p-4">
